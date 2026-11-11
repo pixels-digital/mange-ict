@@ -1,0 +1,2624 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>CREATIVE — لوحة التحكم الإدارية</title>
+<script>
+try {
+  var t = localStorage.getItem('adminTheme') || (matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light');
+  document.documentElement.dataset.theme = t;
+} catch(e) {}
+</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@400;500;600;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+/* ================================================================
+   CSS VARIABLES & THEMING
+   ================================================================ */
+:root {
+  --navy: #1a3a5c;
+  --navy-dark: #0f2338;
+  --navy2: #2563a8;
+  --teal: #3b82c4;
+  --teal-light: #60a5fa;
+  --ink: #0f1f35;
+  --mut: #5a6e87;
+  --bg: #f0f6fc;
+  --line: #cddaec;
+  --line-light: #e4edf8;
+  --red: #dc2626;
+  --green: #16a34a;
+  --gold: #d97706;
+  --purple: #7c3aed;
+  --sh: 0 4px 16px rgba(26, 58, 92, 0.08);
+  --sh-lg: 0 16px 40px rgba(26, 58, 92, 0.14);
+  --card: #ffffff;
+  --sidebar: rgba(255, 255, 255, 0.98);
+  --font-heading: 'Baloo Bhaijaan 2', cursive, sans-serif;
+  --font-body: 'IBM Plex Sans Arabic', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+[data-theme="dark"] {
+  --bg: #090e17;
+  --ink: #e2eaf8;
+  --mut: #8ca0be;
+  --line: #1c2b42;
+  --line-light: #253650;
+  --navy: #7ab8f5;
+  --navy-dark: #070d18;
+  --navy2: #4f9fd6;
+  --teal: #60a5fa;
+  --teal-light: #93c5fd;
+  --card: #121c2d;
+  --sidebar: rgba(13, 22, 38, 0.98);
+  --sh: 0 4px 16px rgba(0, 0, 0, 0.45);
+  --sh-lg: 0 16px 40px rgba(0, 0, 0, 0.65);
+  color-scheme: dark;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--font-body);
+  font-weight: 500;
+  background: var(--bg);
+  color: var(--ink);
+  line-height: 1.6;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+h1, h2, h3, h4, h5, h6 { font-family: var(--font-heading); font-weight: 800; }
+a { text-decoration: none; color: inherit; }
+button { font-family: inherit; }
+
+/* Custom Scrollbar */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--line); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: var(--teal); }
+
+/* Animations */
+@keyframes slideUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes fadeInScale { from { opacity: 0; transform: scale(0.95) translateY(12px); } to { opacity: 1; transform: none; } }
+@keyframes rpAnim { to { transform: scale(4); opacity: 0; } }
+@keyframes pulseDot { 0%, 100% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.5); } 50% { box-shadow: 0 0 0 7px rgba(22, 163, 74, 0); } }
+@keyframes shimmer { to { background-position: -200% 0; } }
+@keyframes cardEnter { from { opacity: 0; transform: translateY(18px) scale(0.98); } to { opacity: 1; transform: none; } }
+@keyframes spin360 { to { transform: rotate(360deg); } }
+
+/* ================================================================
+   LOGIN SCREEN
+   ================================================================ */
+#loginPage {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(145deg, var(--bg), #dbeafe);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+[data-theme="dark"] #loginPage {
+  background: linear-gradient(145deg, #070d18, #0f1c33);
+}
+.login-card {
+  background: var(--card);
+  border-radius: 28px;
+  padding: clamp(32px, 6vw, 44px) clamp(24px, 5vw, 36px);
+  width: 100%;
+  max-width: 440px;
+  box-shadow: 0 28px 70px rgba(26, 58, 92, 0.22);
+  text-align: center;
+  animation: slideUp 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+  border: 1px solid var(--line);
+}
+.login-brand-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, var(--navy), var(--navy2));
+  color: #fff;
+  display: grid;
+  place-items: center;
+  margin: 0 auto 14px;
+  box-shadow: 0 8px 24px rgba(37, 99, 168, 0.3);
+}
+.login-brand-icon svg { width: 30px; height: 30px; stroke: #fff; fill: none; stroke-width: 2.2; }
+.login-brand { font-size: 28px; font-weight: 800; color: var(--navy); }
+.login-sub { font-size: 13px; color: var(--mut); margin-top: 2px; }
+.login-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #fef3c7;
+  border: 1px solid #fcd34d;
+  border-radius: 99px;
+  padding: 5px 14px;
+  font-size: 12px;
+  color: #92400e;
+  font-weight: 700;
+  margin: 18px 0 14px;
+}
+[data-theme="dark"] .login-badge { background: rgba(252, 211, 77, 0.12); border-color: #78500a; color: #fcd34d; }
+.login-title { font-size: 20px; font-weight: 800; color: var(--navy); margin-bottom: 6px; }
+.login-desc { font-size: 13px; color: var(--mut); margin-bottom: 22px; }
+.form-group { text-align: start; margin-bottom: 15px; }
+.form-label { display: block; font-size: 13px; font-weight: 700; color: var(--navy); margin-bottom: 6px; }
+.form-input {
+  width: 100%;
+  min-height: 48px;
+  border: 1.5px solid var(--line);
+  border-radius: 13px;
+  padding: 0 14px;
+  font: inherit;
+  font-size: 14px;
+  background: var(--bg);
+  color: var(--ink);
+  transition: all 0.2s;
+}
+.form-input:focus {
+  outline: 0;
+  border-color: var(--teal);
+  box-shadow: 0 0 0 4px rgba(59, 130, 196, 0.15);
+  background: var(--card);
+}
+[data-theme="dark"] .form-input { background: #0c1524; }
+.pw-wrap { position: relative; }
+.pw-wrap .form-input { padding-left: 44px; }
+.pw-toggle {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  color: var(--mut);
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+}
+.pw-toggle:hover { color: var(--navy); }
+.pw-toggle svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+/* ================================================================
+   SIDEBAR & LAYOUT
+   ================================================================ */
+#adminApp { display: none; min-height: 100vh; }
+.admin-layout { display: flex; min-height: 100vh; }
+
+.sidebar {
+  width: 260px;
+  background: var(--sidebar);
+  border-left: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 50;
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.sidebar-header {
+  padding: 20px 18px 14px;
+  border-bottom: 1px solid var(--line);
+}
+.sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.logo-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--navy), var(--navy2));
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.logo-icon svg { width: 22px; height: 22px; stroke: #fff; fill: none; stroke-width: 2; }
+.logo-brand { font-size: 18px; font-weight: 800; color: var(--navy); }
+.logo-role { font-size: 11px; color: var(--mut); }
+
+.sidebar-nav { flex: 1; padding: 14px 10px; }
+.nav-group { margin-bottom: 18px; }
+.nav-label {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--mut);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  padding: 0 10px;
+  margin-bottom: 6px;
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 14px;
+  border-radius: 12px;
+  cursor: pointer;
+  color: var(--mut);
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s;
+  border: 0;
+  background: none;
+  width: 100%;
+  text-align: start;
+  position: relative;
+  overflow: hidden;
+}
+.nav-item:hover { background: rgba(59, 130, 196, 0.08); color: var(--navy); }
+.nav-item.active {
+  background: linear-gradient(135deg, rgba(26, 58, 92, 0.12), rgba(37, 99, 168, 0.08));
+  color: var(--navy);
+  font-weight: 800;
+  box-shadow: inset -3px 0 0 var(--teal);
+}
+[data-theme="dark"] .nav-item.active { background: rgba(122, 184, 245, 0.14); }
+.nav-item svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; flex-shrink: 0; }
+.nav-badge {
+  margin-inline-start: auto;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 99px;
+  background: var(--navy2);
+  color: #fff;
+  font-weight: 800;
+}
+.sidebar-footer { padding: 14px 10px; border-top: 1px solid var(--line); }
+
+/* Main Content Wrapper */
+.main-content {
+  flex: 1;
+  margin-right: 260px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  transition: margin 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Top Bar */
+.topbar {
+  background: var(--card);
+  border-bottom: 1px solid var(--line);
+  padding: 0 24px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.topbar-title { font-size: 19px; font-weight: 800; color: var(--navy); }
+.topbar-right { display: flex; align-items: center; gap: 12px; }
+
+.theme-btn-toggle {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1.5px solid var(--line);
+  background: var(--card);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: all 0.2s;
+  color: var(--mut);
+}
+.theme-btn-toggle:hover { border-color: var(--teal); color: var(--navy); transform: scale(1.05); }
+.theme-btn-toggle svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+.admin-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg);
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--navy);
+}
+.admin-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); animation: pulseDot 2s infinite; }
+.mobile-menu-btn {
+  display: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  border: 1.5px solid var(--line);
+  background: var(--card);
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 4px;
+}
+.mobile-menu-btn span { display: block; width: 20px; height: 2px; background: var(--navy); border-radius: 2px; }
+
+/* Page Content Container */
+.page-content { padding: 24px; flex: 1; }
+.page { display: none; }
+.page.active { display: block; animation: fadeInScale 0.35s cubic-bezier(0.2, 0.8, 0.2, 1); }
+
+/* ================================================================
+   STAT CARDS & DASHBOARD
+   ================================================================ */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 28px;
+}
+.stat-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 20px 18px;
+  box-shadow: var(--sh);
+  position: relative;
+  overflow: hidden;
+  animation: cardEnter 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  transition: all 0.25s;
+}
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--sh-lg);
+  border-color: var(--teal);
+}
+.stat-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 12px;
+}
+.stat-icon svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 2; }
+.stat-blue .stat-icon { background: #eff6ff; color: #2563eb; }
+.stat-green .stat-icon { background: #f0fdf4; color: #16a34a; }
+.stat-purple .stat-icon { background: #f5f3ff; color: #7c3aed; }
+.stat-gold .stat-icon { background: #fffbeb; color: #d97706; }
+.stat-teal .stat-icon { background: #f0fdfa; color: #0d9488; }
+.stat-red .stat-icon { background: #fef2f2; color: #dc2626; }
+[data-theme="dark"] .stat-blue .stat-icon { background: rgba(37, 99, 235, 0.15); color: #60a5fa; }
+[data-theme="dark"] .stat-green .stat-icon { background: rgba(22, 163, 74, 0.15); color: #4ade80; }
+[data-theme="dark"] .stat-purple .stat-icon { background: rgba(124, 58, 237, 0.15); color: #a78bfa; }
+[data-theme="dark"] .stat-gold .stat-icon { background: rgba(217, 119, 6, 0.15); color: #fbbf24; }
+[data-theme="dark"] .stat-teal .stat-icon { background: rgba(13, 148, 136, 0.15); color: #2dd4bf; }
+[data-theme="dark"] .stat-red .stat-icon { background: rgba(220, 38, 38, 0.15); color: #f87171; }
+
+.stat-num { font-size: 32px; font-weight: 800; color: var(--navy); line-height: 1; margin-bottom: 6px; font-family: var(--font-heading); }
+.stat-label { font-size: 13px; color: var(--mut); font-weight: 600; }
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 20px;
+  border-radius: 12px;
+  border: 0;
+  background: linear-gradient(135deg, var(--navy), var(--navy2));
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(26, 58, 92, 0.2);
+  transition: all 0.2s;
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
+}
+.btn:hover { box-shadow: 0 8px 22px rgba(26, 58, 92, 0.3); transform: translateY(-2px); }
+.btn:active { transform: scale(0.97); }
+.btn.sm { min-height: 36px; padding: 0 14px; font-size: 13px; border-radius: 10px; }
+.btn.secondary { background: var(--card); color: var(--navy); border: 1.5px solid var(--line); box-shadow: none; }
+.btn.secondary:hover { border-color: var(--teal); background: var(--bg); }
+.btn.danger { background: linear-gradient(135deg, #c0392b, #dc2626); }
+.btn.success { background: linear-gradient(135deg, #15803d, #16a34a); }
+.btn svg { width: 17px; height: 17px; stroke: currentColor; fill: none; stroke-width: 2.2; flex-shrink: 0; }
+
+/* Action buttons in tables */
+.action-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  border: 0;
+  cursor: pointer;
+  display: inline-grid;
+  place-items: center;
+  transition: all 0.2s;
+  margin: 0 2px;
+}
+.action-btn svg { width: 15px; height: 15px; stroke: currentColor; fill: none; stroke-width: 2; }
+.action-btn.edit { background: #eff6ff; color: #2563eb; }
+.action-btn.edit:hover { background: #2563eb; color: #fff; transform: scale(1.1); }
+.action-btn.del { background: #fef2f2; color: #dc2626; }
+.action-btn.del:hover { background: #dc2626; color: #fff; transform: scale(1.1); }
+.action-btn.view { background: #f0fdf4; color: #16a34a; }
+.action-btn.view:hover { background: #16a34a; color: #fff; transform: scale(1.1); }
+.action-btn.toggle { background: #f5f3ff; color: #7c3aed; }
+.action-btn.toggle:hover { background: #7c3aed; color: #fff; transform: scale(1.1); }
+
+/* Table styling */
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 22px;
+  box-shadow: var(--sh);
+  margin-bottom: 20px;
+}
+.sec-hd {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.sec-hd h2 { font-size: 19px; font-weight: 800; color: var(--navy); }
+.card-title {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--navy);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.card-title svg { width: 18px; height: 18px; stroke: var(--teal); fill: none; stroke-width: 2.2; }
+
+.table-wrap {
+  overflow-x: auto;
+  border-radius: 14px;
+  border: 1.5px solid var(--line);
+  -webkit-overflow-scrolling: touch;
+}
+table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+th, td { padding: 13px 14px; text-align: right; white-space: nowrap; }
+th { font-weight: 700; color: var(--mut); border-bottom: 2px solid var(--line); background: var(--bg); font-size: 12.5px; }
+td { border-bottom: 1px solid var(--line); }
+tr:last-child td { border: 0; }
+tr:hover td { background: rgba(59, 130, 196, 0.04); }
+
+.badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; padding: 4px 10px; border-radius: 99px; font-weight: 700; }
+.badge-green { background: #dcfce7; color: #15803d; }
+.badge-red { background: #fee2e2; color: #b91c1c; }
+.badge-gold { background: #fef3c7; color: #92400e; }
+.badge-blue { background: #dbeafe; color: #1d4ed8; }
+.badge-mut { background: #f1f5f9; color: #64748b; }
+[data-theme="dark"] .badge-green { background: rgba(22, 163, 74, 0.2); color: #4ade80; }
+[data-theme="dark"] .badge-red { background: rgba(220, 38, 38, 0.2); color: #f87171; }
+[data-theme="dark"] .badge-gold { background: rgba(217, 119, 6, 0.2); color: #fbbf24; }
+[data-theme="dark"] .badge-blue { background: rgba(59, 130, 246, 0.2); color: #60a5fa; }
+[data-theme="dark"] .badge-mut { background: rgba(255, 255, 255, 0.08); color: var(--mut); }
+
+/* Control Cards (Platform State) */
+.control-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 18px;
+  margin-bottom: 28px;
+}
+.control-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 22px;
+  box-shadow: var(--sh);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transition: all 0.25s;
+}
+.control-card:hover { transform: translateY(-3px); box-shadow: var(--sh-lg); }
+.control-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.control-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.control-icon svg { width: 24px; height: 24px; stroke: currentColor; fill: none; stroke-width: 2; }
+.ci-maint { background: #fffbeb; color: #d97706; }
+.ci-block { background: #fef2f2; color: #dc2626; }
+.ci-copy { background: #f0fdf4; color: #16a34a; }
+[data-theme="dark"] .ci-maint { background: rgba(217, 119, 6, 0.15); color: #fbbf24; }
+[data-theme="dark"] .ci-block { background: rgba(220, 38, 38, 0.15); color: #f87171; }
+[data-theme="dark"] .ci-copy { background: rgba(22, 163, 74, 0.15); color: #4ade80; }
+
+.control-title { font-size: 16px; font-weight: 800; color: var(--navy); display: flex; align-items: center; gap: 8px; }
+.control-desc { font-size: 13px; color: var(--mut); line-height: 1.6; }
+
+/* Toggle switch */
+.toggle-wrap { display: flex; align-items: center; gap: 10px; }
+.toggle-label { font-size: 13px; font-weight: 700; color: var(--mut); }
+.toggle { position: relative; width: 48px; height: 26px; flex-shrink: 0; }
+.toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+.toggle-slider {
+  position: absolute;
+  inset: 0;
+  background: #cbd5e1;
+  border-radius: 99px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.toggle-slider::before {
+  content: "";
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  bottom: 3px;
+  right: 3px;
+  transition: transform 0.3s;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+.toggle input:checked + .toggle-slider { background: var(--green); }
+.toggle input:checked + .toggle-slider::before { transform: translateX(-22px); }
+.toggle.warning input:checked + .toggle-slider { background: var(--gold); }
+.toggle.danger input:checked + .toggle-slider { background: var(--red); }
+[data-theme="dark"] .toggle-slider { background: #2d4a6e; }
+
+/* Modals */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 12, 26, 0.75);
+  z-index: 200;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.modal-overlay.open { display: flex; animation: fadeIn 0.25s ease; }
+.modal-box {
+  background: var(--card);
+  border-radius: 22px;
+  width: 100%;
+  max-width: 580px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.4);
+  animation: slideUp 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+  border: 1px solid var(--line);
+}
+.modal-head {
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  background: var(--card);
+  z-index: 2;
+}
+.modal-head-title { font-size: 17px; font-weight: 800; color: var(--navy); }
+.modal-close {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 0;
+  background: var(--bg);
+  color: var(--mut);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: all 0.2s;
+}
+.modal-close:hover { background: #fee2e2; color: #dc2626; transform: rotate(90deg); }
+.modal-close svg { width: 17px; height: 17px; stroke: currentColor; fill: none; stroke-width: 2.2; }
+.modal-body { padding: 22px; }
+
+/* Backdrop for mobile drawer */
+#sidebarBk {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 12, 26, 0.5);
+  z-index: 45;
+  display: none;
+  backdrop-filter: blur(4px);
+}
+
+/* Charts */
+.charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 24px; }
+.chart-wrap { position: relative; height: 230px; }
+
+/* Responsive adjustments */
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(100%); }
+  .sidebar.open { transform: none; box-shadow: -8px 0 40px rgba(0, 0, 0, 0.35); }
+  .main-content { margin-right: 0; }
+  .mobile-menu-btn { display: flex; }
+  .charts-row { grid-template-columns: 1fr; }
+  .settings-grid { grid-template-columns: 1fr !important; }
+}
+@media (max-width: 600px) {
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+  .control-grid { grid-template-columns: 1fr; }
+  .page-content { padding: 16px; }
+  .topbar { padding: 0 16px; }
+}
+@media (max-width: 400px) {
+  .stats-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ================================================================
+     LOGIN VIEW
+     ================================================================ -->
+<div id="loginPage">
+  <div class="login-card">
+    <div class="login-brand-icon">
+      <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+    </div>
+    <div class="login-brand">CREATIVE</div>
+    <div class="login-sub">لوحة التحكم والإدارة المركزية</div>
+
+    <div class="login-badge">
+      <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.2"><path d="M12 3l8 4v5c0 5-4 9-8 10-4-1-8-5-8-10V7z"/></svg>
+      منطقة تحكم محمية ومخصصة للمدير
+    </div>
+
+    <h2 class="login-title">تسجيل دخول الإدارة</h2>
+    <p class="login-desc">أدخل بيانات الاعتماد الرسمية للوصول إلى أدوات التحكم</p>
+
+    <div class="form-group">
+      <label class="form-label">البريد الإلكتروني</label>
+      <input type="email" class="form-input" id="loginEmail" placeholder="admin@creative.edu" autocomplete="email">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">كلمة المرور</label>
+      <div class="pw-wrap">
+        <input type="password" class="form-input" id="loginPw" placeholder="••••••••" autocomplete="current-password">
+        <button class="pw-toggle" onclick="togglePasswordVisibility()" type="button" aria-label="إظهار كلمة المرور">
+          <svg id="eyeIcon" viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <button class="btn" style="width:100%;margin-top:10px" id="loginBtn" onclick="handleAdminLogin()">
+      <svg viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>
+      تسجيل الدخول للوحة
+    </button>
+
+    <p style="font-size:13px;color:var(--mut);margin-top:18px">
+      <a href="index.html" style="color:var(--teal);text-decoration:none;display:inline-flex;align-items:center;gap:6px;font-weight:700">
+        <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.5"><polyline points="9 18 15 12 9 6"/></svg>
+        الرجوع إلى واجهة الطالب
+      </a>
+    </p>
+  </div>
+</div>
+
+<!-- ================================================================
+     ADMIN APP MAIN LAYOUT
+     ================================================================ -->
+<div id="adminApp">
+<div id="sidebarBk" onclick="closeAdminSidebar()"></div>
+<div class="admin-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <div class="logo-icon">
+          <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        </div>
+        <div>
+          <div class="logo-brand">CREATIVE</div>
+          <div class="logo-role">لوحة إدارة المنصة</div>
+        </div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-group">
+        <div class="nav-label">الرئيسية والمتابعة</div>
+        <button class="nav-item active" onclick="switchAdminPage('dashboard')">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          لوحة التحكم
+        </button>
+        <button class="nav-item" onclick="switchAdminPage('analytics')">
+          <svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          سجل الطلاب والتحليلات
+          <span class="nav-badge" id="analyticsCountBadge">0</span>
+        </button>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-label">إدارة المحتوى التعليمي</div>
+        <button class="nav-item" onclick="switchAdminPage('courses')">
+          <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          إدارة الدورات
+          <span class="nav-badge" id="coursesCountBadge">0</span>
+        </button>
+        <button class="nav-item" onclick="switchAdminPage('videos')">
+          <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><polygon points="10 8 10 14 15 11"/></svg>
+          إدارة الفيديوهات
+          <span class="nav-badge" id="videosCountBadge">0</span>
+        </button>
+        <button class="nav-item" onclick="switchAdminPage('attachments')">
+          <svg viewBox="0 0 24 24"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+          إدارة المرفقات
+        </button>
+      </div>
+
+      <div class="nav-group">
+        <div class="nav-label">التحكم والإعدادات</div>
+        <button class="nav-item" onclick="switchAdminPage('platform')">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          حالة المنصة والأوامر
+        </button>
+        <button class="nav-item" onclick="switchAdminPage('settings')">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+          إعدادات المنصة
+        </button>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <a href="index.html" target="_blank" class="nav-item" style="color:var(--teal)">
+        <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+        معاينة واجهة الطالب
+      </a>
+      <button class="nav-item" style="color:var(--red)" onclick="handleAdminLogout()">
+        <svg viewBox="0 0 24 24" style="stroke:var(--red)"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+        تسجيل الخروج
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN VIEW -->
+  <div class="main-content">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:12px">
+        <button class="mobile-menu-btn" onclick="openAdminSidebar()" aria-label="القائمة الجانبية">
+          <span></span><span></span><span></span>
+        </button>
+        <h1 class="topbar-title" id="pageTitle">لوحة التحكم</h1>
+      </div>
+
+      <div class="topbar-right">
+        <div class="admin-chip">
+          <div class="admin-dot"></div>
+          <span id="adminName">المدير العام</span>
+        </div>
+        <button class="theme-btn-toggle" onclick="toggleAdminTheme()" title="تبديل الوضع">
+          <svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="page-content">
+
+      <!-- ================================================================
+           PAGE: DASHBOARD
+           ================================================================ -->
+      <div class="page active" id="page-dashboard">
+        <div class="stats-grid">
+          <div class="stat-card stat-blue">
+            <div class="stat-icon"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></div>
+            <div class="stat-num" id="totalUsers">0</div>
+            <div class="stat-label">إجمالي الطلاب المسجلين</div>
+          </div>
+          <div class="stat-card stat-green">
+            <div class="stat-icon"><svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg></div>
+            <div class="stat-num" id="totalSessions">0</div>
+            <div class="stat-label">مرات تشغيل الفيديوهات</div>
+          </div>
+          <div class="stat-card stat-purple">
+            <div class="stat-icon"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div>
+            <div class="stat-num" id="totalCourses">0</div>
+            <div class="stat-label">المسارات والدورات</div>
+          </div>
+          <div class="stat-card stat-gold">
+            <div class="stat-icon"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><polygon points="10 8 10 14 15 11"/></svg></div>
+            <div class="stat-num" id="totalVideos">0</div>
+            <div class="stat-label">الفيديوهات المنشورة</div>
+          </div>
+          <div class="stat-card stat-teal">
+            <div class="stat-icon"><svg viewBox="0 0 24 24"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg></div>
+            <div class="stat-num" id="totalAttach">0</div>
+            <div class="stat-label">المرفقات والمذكرات</div>
+          </div>
+          <div class="stat-card stat-red">
+            <div class="stat-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+            <div class="stat-num" id="totalWatchTime">0 د</div>
+            <div class="stat-label">إجمالي وقت التعلم</div>
+          </div>
+        </div>
+
+        <div class="charts-row">
+          <div class="card">
+            <div class="card-title"><svg viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>مشاهدات آخر 7 أيام</div>
+            <div class="chart-wrap"><canvas id="chartSessions"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="card-title"><svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>أكثر الفيديوهات تفاعلاً</div>
+            <div class="chart-wrap"><canvas id="chartTopVideos"></canvas></div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:18px">
+          <div class="card">
+            <div class="card-title"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>أحدث الطلاب المنضمين</div>
+            <div id="recentUsers" style="display:flex;flex-direction:column;gap:10px">
+              <div style="text-align:center;color:var(--mut);padding:20px">جاري جلب البيانات...</div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>آخر جلسات المشاهدة للطلاب</div>
+            <div id="recentSessions" style="display:flex;flex-direction:column;gap:10px">
+              <div style="text-align:center;color:var(--mut);padding:20px">جاري جلب البيانات...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================================================================
+           PAGE: ANALYTICS & STUDENTS
+           ================================================================ -->
+      <div class="page" id="page-analytics">
+        <div class="sec-hd">
+          <h2>سجل متابعة الطلاب والتحليلات</h2>
+          <span id="studentsTotal" style="font-weight:700;color:var(--teal)">0 طالب مسجل</span>
+        </div>
+
+        <div style="display:flex;gap:12px;margin-bottom:18px;flex-wrap:wrap">
+          <input type="text" class="form-input" id="searchStudent" placeholder="ابحث باسم الطالب..." oninput="filterStudentsTable()" style="max-width:300px">
+          <select class="form-input" id="filterCourse" onchange="filterStudentsTable()" style="max-width:220px">
+            <option value="">جميع الدورات</option>
+          </select>
+          <button class="btn secondary sm" onclick="loadAnalyticsData()">
+            <svg viewBox="0 0 24 24"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            تحديث
+          </button>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>الطالب</th>
+                <th>الفيديوهات المختلفة</th>
+                <th>إجمالي مرات التشغيل</th>
+                <th>وقت التعلم</th>
+                <th>تاريخ التسجيل</th>
+                <th>التفاصيل</th>
+              </tr>
+            </thead>
+            <tbody id="analyticsBody">
+              <tr><td colspan="6" style="text-align:center;padding:24px;color:var(--mut)">جاري التحميل...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Student Detail Modal -->
+        <div class="modal-overlay" id="studentDetailModal">
+          <div class="modal-box">
+            <div class="modal-head">
+              <span class="modal-head-title" id="detailStudentName">سجل الطالب</span>
+              <button class="modal-close" onclick="closeAdminModal('studentDetailModal')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+            </div>
+            <div class="modal-body" id="studentDetailBody"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================================================================
+           PAGE: COURSES
+           ================================================================ -->
+      <div class="page" id="page-courses">
+        <div class="sec-hd">
+          <h2>إدارة المسارات والدورات</h2>
+          <button class="btn" onclick="openAddCourseModal()">
+            <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            إضافة دورة جديدة
+          </button>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>اسم الدورة</th>
+                <th>الوصف</th>
+                <th>الفيديوهات</th>
+                <th>الترتيب</th>
+                <th>الحالة</th>
+                <th>الإجراءات</th>
+              </tr>
+            </thead>
+            <tbody id="coursesBody">
+              <tr><td colspan="7" style="text-align:center;padding:24px;color:var(--mut)">جاري التحميل...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Add/Edit Course Modal -->
+        <div class="modal-overlay" id="courseModal">
+          <div class="modal-box">
+            <div class="modal-head">
+              <span class="modal-head-title" id="courseModalTitle">إضافة دورة جديدة</span>
+              <button class="modal-close" onclick="closeAdminModal('courseModal')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+            </div>
+            <div class="modal-body">
+              <input type="hidden" id="courseId">
+              <div class="form-group">
+                <label class="form-label">اسم الدورة / المسار *</label>
+                <input type="text" class="form-input" id="courseName" placeholder="مثال: أساسيات تكنولوجيا المعلومات والاتصالات">
+              </div>
+              <div class="form-group">
+                <label class="form-label">ترتيب العرض</label>
+                <input type="number" class="form-input" id="courseOrder" value="1" min="1">
+              </div>
+              <div class="form-group">
+                <label class="form-label">وصف مختصر للدورة</label>
+                <textarea class="form-input" id="courseDesc" style="min-height:90px" placeholder="شرح مبسط لمحتوى وأهداف الدورة..."></textarea>
+              </div>
+              <div class="form-group">
+                <label class="form-label">رابط صورة الغلاف (اختياري)</label>
+                <input type="url" class="form-input" id="courseThumbnail" placeholder="https://...">
+              </div>
+              <div class="toggle-wrap" style="margin-bottom:20px">
+                <label class="toggle"><input type="checkbox" id="coursePublished" checked><span class="toggle-slider"></span></label>
+                <span class="toggle-label">نشر الدورة وإظهارها للطلاب فوراً</span>
+              </div>
+              <button class="btn" style="width:100%" onclick="saveCourseRecord()">
+                <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                حفظ بيانات الدورة
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================================================================
+           PAGE: VIDEOS
+           ================================================================ -->
+      <div class="page" id="page-videos">
+        <div class="sec-hd">
+          <h2>إدارة الفيديوهات والشروحات</h2>
+          <button class="btn" onclick="openAddVideoModal()">
+            <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            إضافة فيديو جديد
+          </button>
+        </div>
+
+        <div style="margin-bottom:18px">
+          <select class="form-input" id="filterVideosCourse" onchange="loadVideosTable()" style="max-width:260px">
+            <option value="">جميع الدورات</option>
+          </select>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>عنوان الفيديو</th>
+                <th>الدورة التابعة</th>
+                <th>الترتيب</th>
+                <th>المشاهدات</th>
+                <th>الحالة</th>
+                <th>الإجراءات</th>
+              </tr>
+            </thead>
+            <tbody id="videosBody">
+              <tr><td colspan="7" style="text-align:center;padding:24px;color:var(--mut)">جاري التحميل...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Add/Edit Video Modal -->
+        <div class="modal-overlay" id="videoModal">
+          <div class="modal-box">
+            <div class="modal-head">
+              <span class="modal-head-title" id="videoModalTitle">إضافة فيديو جديد</span>
+              <button class="modal-close" onclick="closeAdminModal('videoModal')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+            </div>
+            <div class="modal-body">
+              <input type="hidden" id="videoId">
+              <div class="form-group">
+                <label class="form-label">عنوان الفيديو *</label>
+                <input type="text" class="form-input" id="videoTitle" placeholder="مثال: شرح الدرس الأول - المفاهيم الأساسية">
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                <div class="form-group">
+                  <label class="form-label">الدورة المرتبطة *</label>
+                  <select class="form-input" id="videoCourse"><option value="">اختر الدورة</option></select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">ترتيب الفيديو</label>
+                  <input type="number" class="form-input" id="videoOrder" value="1" min="1">
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">رابط الفيديو (Google Drive أو YouTube) *</label>
+                <input type="url" class="form-input" id="videoDriveUrl" placeholder="https://drive.google.com/file/d/... أو رابط يوتيوب" oninput="previewVideoEmbedLink()">
+                <div id="driveUrlPreview" style="margin-top:8px"></div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">الوصف</label>
+                <textarea class="form-input" id="videoDesc" style="min-height:80px" placeholder="وصف محتوى الدرس..."></textarea>
+              </div>
+              <div class="form-group">
+                <label class="form-label">صورة مصغرة (اختياري)</label>
+                <input type="url" class="form-input" id="videoThumb" placeholder="https://...">
+              </div>
+              <div class="toggle-wrap" style="margin-bottom:20px">
+                <label class="toggle"><input type="checkbox" id="videoPublished" checked><span class="toggle-slider"></span></label>
+                <span class="toggle-label">نشر الفيديو للطلاب</span>
+              </div>
+              <button class="btn" style="width:100%" onclick="saveVideoRecord()">
+                <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                حفظ الفيديو
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================================================================
+           PAGE: ATTACHMENTS
+           ================================================================ -->
+      <div class="page" id="page-attachments">
+        <div class="sec-hd">
+          <h2>إدارة المرفقات والمذكرات</h2>
+          <button class="btn" onclick="openAddAttachmentModal()">
+            <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            إضافة مرفق جديد
+          </button>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>اسم الملف</th>
+                <th>النوع</th>
+                <th>الدورة التابعة</th>
+                <th>قابل للتنزيل</th>
+                <th>الإجراءات</th>
+              </tr>
+            </thead>
+            <tbody id="attachBody">
+              <tr><td colspan="5" style="text-align:center;padding:24px;color:var(--mut)">جاري التحميل...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Add/Edit Attachment Modal -->
+        <div class="modal-overlay" id="attachModal">
+          <div class="modal-box">
+            <div class="modal-head">
+              <span class="modal-head-title" id="attachModalTitle">إضافة مرفق جديد</span>
+              <button class="modal-close" onclick="closeAdminModal('attachModal')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+            </div>
+            <div class="modal-body">
+              <input type="hidden" id="attachId">
+              <div style="display:grid;grid-template-columns:2fr 1fr;gap:12px">
+                <div class="form-group">
+                  <label class="form-label">اسم الملف / المذكرة *</label>
+                  <input type="text" class="form-input" id="attachName" placeholder="مثال: ملخص الوحدة الأولى PDF">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">نوع الملف</label>
+                  <select class="form-input" id="attachType">
+                    <option value="pdf">PDF</option>
+                    <option value="image">صورة / رسم توضيحي</option>
+                    <option value="link">رابط خارجي</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">رابط التنزيل أو المعاينة *</label>
+                <input type="url" class="form-input" id="attachUrl" placeholder="https://...">
+              </div>
+              <div class="form-group">
+                <label class="form-label">الدورة المرتبطة (اختياري)</label>
+                <select class="form-input" id="attachCourse"><option value="">غير مرتبط بدورة محددة</option></select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">الوصف</label>
+                <textarea class="form-input" id="attachDesc" style="min-height:80px" placeholder="وصف محتوى المرفق..."></textarea>
+              </div>
+              <div class="toggle-wrap" style="margin-bottom:20px">
+                <label class="toggle"><input type="checkbox" id="attachDownloadable" checked><span class="toggle-slider"></span></label>
+                <span class="toggle-label">السماح للطلاب بتنزيل الملف</span>
+              </div>
+              <button class="btn" style="width:100%" onclick="saveAttachmentRecord()">
+                <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                حفظ المرفق
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================================================================
+           PAGE: PLATFORM STATE & COMMANDS
+           ================================================================ -->
+      <div class="page" id="page-platform">
+        <div class="card" style="border-inline-start:5px solid var(--gold);background:var(--card)">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+            <svg viewBox="0 0 24 24" style="width:20px;height:20px;stroke:var(--gold);fill:none;stroke-width:2.2"><path d="M12 9v4M12 17h.01M10.3 3.6L2.3 17a2 2 0 001.7 3h16a2 2 0 001.7-3L13.7 3.6a2 2 0 00-3.4 0z"/></svg>
+            <strong style="color:var(--navy);font-size:16px">أوامر التحكم الفوري في المنصة</strong>
+          </div>
+          <p style="font-size:13px;color:var(--mut);line-height:1.7">
+            تُطبّق هذه الأوامر لحظياً في واجهة الطالب دون الحاجة لتحديث الصفحة. يتم تطبيق الأوضاع حسب الأولوية التالية: <strong>وضع الصيانة</strong> ← <strong>الحجب الكامل</strong> ← <strong>حماية الملكية الفكرية</strong>.
+          </p>
+        </div>
+
+        <div class="control-grid">
+          <!-- Maintenance -->
+          <div class="control-card">
+            <div class="control-card-top">
+              <div>
+                <div class="control-title">
+                  <svg viewBox="0 0 24 24" style="stroke:var(--gold)"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                  وضع الصيانة
+                </div>
+                <p class="control-desc">يُخفي المحتوى فوراً ويعرض رسالة صيانة احترافية للطلاب.</p>
+              </div>
+              <div class="control-icon ci-maint">
+                <svg viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+              </div>
+            </div>
+            <div class="toggle-wrap">
+              <label class="toggle warning"><input type="checkbox" id="toggleMaint" onchange="updatePlatformToggle('maintenanceMode', this.checked)"><span class="toggle-slider"></span></label>
+              <span class="toggle-label" id="maintStatus">مُعطَّل</span>
+            </div>
+            <div class="form-group" style="margin:0">
+              <label class="form-label">رسالة الصيانة المخصصة</label>
+              <textarea class="form-input" id="maintMsg" style="min-height:75px" placeholder="نقوم حالياً بتحديث المنصة..."></textarea>
+              <button class="btn secondary sm" style="width:100%;margin-top:8px" onclick="savePlatformCustomMsg('maintMsg')">
+                <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+                حفظ رسالة الصيانة
+              </button>
+            </div>
+          </div>
+
+          <!-- Block -->
+          <div class="control-card">
+            <div class="control-card-top">
+              <div>
+                <div class="control-title">
+                  <svg viewBox="0 0 24 24" style="stroke:var(--red)"><circle cx="12" cy="12" r="10"/><path d="M4.9 4.9l14.2 14.2"/></svg>
+                  الحجب والتقييد الكامل
+                </div>
+                <p class="control-desc">يمنع الوصول لكافة محتويات المنصة مؤقتاً برسالة إيقاف.</p>
+              </div>
+              <div class="control-icon ci-block">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M4.9 4.9l14.2 14.2"/></svg>
+              </div>
+            </div>
+            <div class="toggle-wrap">
+              <label class="toggle danger"><input type="checkbox" id="toggleBlock" onchange="updatePlatformToggle('blockMode', this.checked)"><span class="toggle-slider"></span></label>
+              <span class="toggle-label" id="blockStatus">مُعطَّل</span>
+            </div>
+            <div class="form-group" style="margin:0">
+              <label class="form-label">رسالة الحجب المخصصة</label>
+              <textarea class="form-input" id="blockMsg" style="min-height:75px" placeholder="تم تقييد الوصول مؤقتاً..."></textarea>
+              <button class="btn secondary sm" style="width:100%;margin-top:8px" onclick="savePlatformCustomMsg('blockMsg')">
+                <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+                حفظ رسالة الحجب
+              </button>
+            </div>
+          </div>
+
+          <!-- Copyright -->
+          <div class="control-card">
+            <div class="control-card-top">
+              <div>
+                <div class="control-title">
+                  <svg viewBox="0 0 24 24" style="stroke:var(--green)"><path d="M12 3l8 4v5c0 5-4 9-8 10-4-1-8-5-8-10V7z"/></svg>
+                  حماية حقوق الملكية
+                </div>
+                <p class="control-desc">يمنع تشغيل الدروس ويعرض بيان حقوق الملكية الفكرية.</p>
+              </div>
+              <div class="control-icon ci-copy">
+                <svg viewBox="0 0 24 24"><path d="M12 3l8 4v5c0 5-4 9-8 10-4-1-8-5-8-10V7z"/></svg>
+              </div>
+            </div>
+            <div class="toggle-wrap">
+              <label class="toggle"><input type="checkbox" id="toggleCopy" onchange="updatePlatformToggle('copyrightMode', this.checked)"><span class="toggle-slider"></span></label>
+              <span class="toggle-label" id="copyStatus">مُعطَّل</span>
+            </div>
+            <div class="form-group" style="margin:0">
+              <label class="form-label">رسالة الحقوق المخصصة</label>
+              <textarea class="form-input" id="copyMsg" style="min-height:75px" placeholder="المحتوى محمي بحقوق النشر..."></textarea>
+              <button class="btn secondary sm" style="width:100%;margin-top:8px" onclick="savePlatformCustomMsg('copyMsg')">
+                <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+                حفظ رسالة الحقوق
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================================================================
+           PAGE: SETTINGS
+           ================================================================ -->
+      <div class="page" id="page-settings">
+        <div class="settings-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
+          <!-- Platform Identity -->
+          <div class="card">
+            <div class="card-title">
+              <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+              هوية وبيانات المنصة
+            </div>
+            <div class="form-group">
+              <label class="form-label">اسم المنصة الرسمي</label>
+              <input type="text" class="form-input" id="settPlatName" value="CREATIVE">
+            </div>
+            <div class="form-group">
+              <label class="form-label">الشعار النصي (Tagline)</label>
+              <input type="text" class="form-input" id="settTagline" value="CREATIVE – Learn · Practice · Grow">
+            </div>
+            <div class="form-group">
+              <label class="form-label">رسالة الترحيب بالطلاب</label>
+              <textarea class="form-input" id="settWelcome" style="min-height:85px" placeholder="مرحباً بك مجدداً في منصة CREATIVE..."></textarea>
+            </div>
+            <button class="btn" style="width:100%" onclick="savePlatformIdentitySettings()">
+              <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+              حفظ بيانات المنصة
+            </button>
+          </div>
+
+          <!-- Social Links -->
+          <div class="card">
+            <div class="card-title">
+              <svg viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+              روابط التواصل والدعم
+            </div>
+            <div class="form-group">
+              <label class="form-label">رابط واتساب (WhatsApp)</label>
+              <input type="url" class="form-input" id="settWA" placeholder="https://wa.me/201000000000">
+            </div>
+            <div class="form-group">
+              <label class="form-label">رابط تليجرام (Telegram)</label>
+              <input type="url" class="form-input" id="settTG" placeholder="https://t.me/yourchannel">
+            </div>
+            <div class="form-group">
+              <label class="form-label">البريد الإلكتروني للدعم</label>
+              <input type="email" class="form-input" id="settEmail" placeholder="support@creative.edu">
+            </div>
+            <button class="btn" style="width:100%" onclick="saveSocialLinksSettings()">
+              <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+              حفظ روابط التواصل
+            </button>
+          </div>
+        </div>
+
+        <!-- Developer Info -->
+        <div class="card">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+            بيانات المطوّر وحقوق الفوتر
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+            <div class="form-group">
+              <label class="form-label">اسم المطوّر</label>
+              <input type="text" class="form-input" id="devName" value="زياد الدري | Ziad El-Dory">
+            </div>
+            <div class="form-group">
+              <label class="form-label">المسمى الوظيفي</label>
+              <input type="text" class="form-input" id="devRole" value="Full-Stack Developer | Entrepreneur | Founder">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">الجامعة / الكلية والمؤسسات</label>
+            <input type="text" class="form-input" id="devUni" value="طالب بكلية التربية – قسم الكيمياء | مؤسس Pixels Digital وشريك Onvo Tech">
+          </div>
+          <div class="form-group">
+            <label class="form-label">نص حقوق الملكية في الفوتر</label>
+            <input type="text" class="form-input" id="copyrightText" value="تطوير زياد الدري | Ziad El-Dory &bull; جميع الحقوق محفوظة © 2026/2027">
+          </div>
+          <button class="btn" style="width:100%" onclick="saveDeveloperInfoSettings()">
+            <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>
+            حفظ بيانات المطور والفوتر
+          </button>
+        </div>
+
+        <!-- Danger Zone -->
+        <div class="card" style="border:1.5px solid rgba(220,38,38,0.3);background:rgba(220,38,38,0.02)">
+          <div class="card-title" style="color:var(--red)">
+            <svg viewBox="0 0 24 24" style="stroke:var(--red)"><path d="M12 9v4M12 17h.01M10.3 3.6L2.3 17a2 2 0 001.7 3h16a2 2 0 001.7-3L13.7 3.6a2 2 0 00-3.4 0z"/></svg>
+            منطقة العمليات الحساسة
+          </div>
+          <p style="font-size:13px;color:var(--mut);margin-bottom:14px">
+            مسح سجلات المشاهدة يُعيد ضبط عدادات المشاهدات وتاريخ تفاعل الطلاب.
+          </p>
+          <button class="btn danger sm" onclick="clearAllWatchSessionsLog()">
+            <svg viewBox="0 0 24 24"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6"/></svg>
+            مسح كافة سجلات المشاهدات
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ================================================================
+     FIREBASE & ADMIN DASHBOARD LOGIC
+     ================================================================ -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import {
+  getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import {
+  getFirestore, doc, setDoc, getDoc, collection, addDoc,
+  getDocs, query, where, orderBy, limit, onSnapshot,
+  serverTimestamp, deleteDoc, updateDoc, getCountFromServer
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCj2bH8ZL0iAI4w9uHb__-Q8Pscw01axB4",
+  authDomain: "ceritiveict.firebaseapp.com",
+  projectId: "ceritiveict",
+  storageBucket: "ceritiveict.firebasestorage.app",
+  messagingSenderId: "965988178786",
+  appId: "1:965988178786:web:6cba326671629e9c4a6a3b"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// State Variables
+let currentAdmin = null;
+let allStudents = [];
+let allSessions = [];
+let allCourses = [];
+let chartSessions = null;
+let chartTopVideos = null;
+
+// ================================================================
+// SWEETALERT2 TOAST
+// ================================================================
+function notify(icon, title) {
+  Swal.fire({
+    toast: true,
+    position: 'top-end',
+    icon,
+    title,
+    showConfirmButton: false,
+    timer: 2800,
+    timerProgressBar: true,
+    didOpen: (t) => {
+      t.addEventListener('mouseenter', Swal.stopTimer);
+      t.addEventListener('mouseleave', Swal.resumeTimer);
+    }
+  });
+}
+
+// ================================================================
+// THEME SWITCHER
+// ================================================================
+window.toggleAdminTheme = function() {
+  const current = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+  document.documentElement.dataset.theme = current;
+  localStorage.setItem('adminTheme', current);
+  notify('info', current === 'dark' ? 'تم تفعيل الوضع الليلي' : 'تم تفعيل الوضع النهاري');
+  if (allSessions.length) renderCharts(allSessions);
+};
+
+// ================================================================
+// AUTHENTICATION
+// ================================================================
+onAuthStateChanged(auth, async (user) => {
+  if (user && !user.isAnonymous && user.email) {
+    currentAdmin = user;
+    document.getElementById('loginPage').style.display = 'none';
+    document.getElementById('adminApp').style.display = 'block';
+    const emailPrefix = user.email.split('@')[0];
+    document.getElementById('adminName').textContent = emailPrefix;
+    initAdminPanel();
+  } else {
+    if (user && user.isAnonymous) {
+      try { await signOut(auth); } catch(_) {}
+    }
+    currentAdmin = null;
+    document.getElementById('loginPage').style.display = 'flex';
+    document.getElementById('adminApp').style.display = 'none';
+  }
+});
+
+window.handleAdminLogin = async function() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pw = document.getElementById('loginPw').value;
+  if (!email || !pw) {
+    notify('warning', 'يرجى إدخال البريد الإلكتروني وكلمة المرور');
+    return;
+  }
+
+  const btn = document.getElementById('loginBtn');
+  btn.disabled = true;
+  btn.innerHTML = `<svg viewBox="0 0 24 24" style="width:18px;height:18px;animation:spin360 0.8s linear infinite"><path d="M21 12a9 9 0 1 1-6.2-8.6"/></svg> جاري التحقق...`;
+
+  try {
+    await signInWithEmailAndPassword(auth, email, pw);
+    notify('success', 'تم تسجيل الدخول بنجاح');
+  } catch(err) {
+    console.error(err);
+    const errorMap = {
+      'auth/user-not-found': 'البريد الإلكتروني غير مسجل',
+      'auth/wrong-password': 'كلمة المرور غير صحيحة',
+      'auth/invalid-email': 'البريد الإلكتروني غير صالح',
+      'auth/invalid-credential': 'بيانات الدخول غير صحيحة'
+    };
+    notify('error', errorMap[err.code] || 'فشل تسجيل الدخول');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = `<svg viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg> تسجيل الدخول للوحة`;
+  }
+};
+
+document.getElementById('loginPw').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') handleAdminLogin();
+});
+document.getElementById('loginEmail').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') document.getElementById('loginPw').focus();
+});
+
+window.togglePasswordVisibility = function() {
+  const inp = document.getElementById('loginPw');
+  const isPw = inp.type === 'password';
+  inp.type = isPw ? 'text' : 'password';
+  document.getElementById('eyeIcon').innerHTML = isPw
+    ? '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19M1 1l22 22"/>'
+    : '<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>';
+};
+
+window.handleAdminLogout = function() {
+  Swal.fire({
+    title: 'تسجيل الخروج',
+    text: 'هل ترغب في تسجيل الخروج من لوحة التحكم؟',
+    icon: 'question',
+    showCancelButton: true,
+    confirmButtonText: 'نعم، خروج',
+    cancelButtonText: 'إلغاء'
+  }).then(async (r) => {
+    if (r.isConfirmed) {
+      await signOut(auth);
+      notify('info', 'تم تسجيل الخروج');
+    }
+  });
+};
+
+// ================================================================
+// NAVIGATION & SIDEBAR
+// ================================================================
+window.switchAdminPage = function(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+  const target = document.getElementById('page-' + name);
+  if (target) target.classList.add('active');
+
+  document.querySelectorAll('.nav-item').forEach(n => {
+    if (n.getAttribute('onclick')?.includes(`'${name}'`)) n.classList.add('active');
+  });
+
+  const titles = {
+    dashboard: 'لوحة التحكم والمتابعة',
+    analytics: 'سجل الطلاب والتحليلات',
+    courses: 'إدارة المسارات والدورات',
+    videos: 'إدارة الفيديوهات والشروحات',
+    attachments: 'إدارة المرفقات والمذكرات',
+    platform: 'حالة المنصة والأوامر',
+    settings: 'إعدادات المنصة'
+  };
+  document.getElementById('pageTitle').textContent = titles[name] || name;
+
+  closeAdminSidebar();
+
+  if (name === 'dashboard') loadDashboardData();
+  if (name === 'analytics') loadAnalyticsData();
+  if (name === 'courses') loadCoursesData();
+  if (name === 'videos') loadVideosTable();
+  if (name === 'attachments') loadAttachmentsTable();
+  if (name === 'settings') loadSettingsValues();
+};
+
+window.openAdminSidebar = () => {
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('sidebarBk').style.display = 'block';
+  document.body.style.overflow = 'hidden';
+};
+
+window.closeAdminSidebar = () => {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarBk').style.display = 'none';
+  document.body.style.overflow = '';
+};
+
+window.openAdminModal = (id) => {
+  document.getElementById(id).classList.add('open');
+  document.body.style.overflow = 'hidden';
+};
+
+window.closeAdminModal = (id) => {
+  document.getElementById(id).classList.remove('open');
+  document.body.style.overflow = '';
+};
+
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', (e) => {
+    if (e.target === m) closeAdminModal(m.id);
+  });
+});
+
+// ================================================================
+// INIT PANEL
+// ================================================================
+async function initAdminPanel() {
+  listenPlatformStateLive();
+  await loadCoursesData();
+  await loadDashboardData();
+}
+
+// ================================================================
+// DASHBOARD DATA & COUNTERS
+// ================================================================
+async function loadDashboardData() {
+  try {
+    const [uCount, cCount, vCount, aCount, sessSnap, recentUsersSnap] = await Promise.all([
+      getCountFromServer(collection(db, 'users')),
+      getCountFromServer(collection(db, 'courses')),
+      getCountFromServer(collection(db, 'videos')),
+      getCountFromServer(collection(db, 'attachments')),
+      getDocs(query(collection(db, 'watchSessions'), limit(150))),
+      getDocs(query(collection(db, 'users'), limit(6)))
+    ]);
+
+    const totalU = uCount.count;
+    const totalC = cCount.count;
+    const totalV = vCount.count;
+    const totalA = aCount.count;
+
+    const sessions = [];
+    sessSnap.forEach(d => sessions.push({ id: d.id, ...d.data() }));
+    allSessions = sessions;
+
+    // Numerical Counters
+    document.getElementById('totalUsers').textContent = totalU;
+    document.getElementById('totalCourses').textContent = totalC;
+    document.getElementById('totalVideos').textContent = totalV;
+    document.getElementById('totalAttach').textContent = totalA;
+    document.getElementById('totalSessions').textContent = sessions.length;
+
+    document.getElementById('analyticsCountBadge').textContent = totalU;
+    document.getElementById('coursesCountBadge').textContent = totalC;
+    document.getElementById('videosCountBadge').textContent = totalV;
+
+    // Total Watch Time
+    const totalSeconds = sessions.reduce((acc, s) => acc + (s.durationSeconds || 0), 0);
+    document.getElementById('totalWatchTime').textContent = formatSecondsDuration(totalSeconds);
+
+    // Recent Users
+    const ruContainer = document.getElementById('recentUsers');
+    ruContainer.innerHTML = '';
+    if (recentUsersSnap.empty) {
+      ruContainer.innerHTML = '<div style="color:var(--mut);text-align:center;padding:16px">لا يوجد طلاب مسجلون بعد</div>';
+    } else {
+      recentUsersSnap.forEach(d => {
+        const u = d.data();
+        const initial = u.name ? u.name.charAt(0) : 'ط';
+        const dateStr = formatTimestamp(u.firstSeen);
+        const item = document.createElement('div');
+        item.style.cssText = 'display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--line)';
+        item.innerHTML = `
+          <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--navy),var(--teal));color:#fff;display:grid;place-items:center;font-weight:800;flex-shrink:0">${initial}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:700;color:var(--navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(u.name || 'طالب')}</div>
+            <div style="font-size:12px;color:var(--mut)">انضم بتاريخ: ${dateStr}</div>
+          </div>
+        `;
+        ruContainer.appendChild(item);
+      });
+    }
+
+    // Recent Sessions
+    const rsContainer = document.getElementById('recentSessions');
+    rsContainer.innerHTML = '';
+    if (!sessions.length) {
+      rsContainer.innerHTML = '<div style="color:var(--mut);text-align:center;padding:16px">لا توجد جلسات مشاهدة مسجلة بعد</div>';
+    } else {
+      sessions.slice(0, 5).forEach(s => {
+        const stName = s.studentName || s.userName || 'طالب';
+        const vTitle = s.videoTitle || 'فيديو تعليمي';
+        const item = document.createElement('div');
+        item.style.cssText = 'display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--line)';
+        item.innerHTML = `
+          <div style="width:36px;height:36px;border-radius:10px;background:rgba(59,130,196,0.12);color:var(--teal);display:grid;place-items:center;flex-shrink:0">
+            <svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2.2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          </div>
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:700;color:var(--navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(stName)} ← ${escapeHtml(vTitle)}</div>
+            <div style="font-size:12px;color:var(--mut)">المدة: ${formatSecondsDuration(s.durationSeconds || 0)} &bull; ${formatTimestamp(s.startTime || s.startedAt)}</div>
+          </div>
+        `;
+        rsContainer.appendChild(item);
+      });
+    }
+
+    renderCharts(sessions);
+  } catch(e) {
+    console.error('Dashboard load error:', e);
+  }
+}
+
+function renderCharts(sessions) {
+  const isDark = document.documentElement.dataset.theme === 'dark';
+  const gridColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)';
+  const textColor = isDark ? '#8ca0be' : '#5a6e87';
+
+  // 1. Sessions chart (Last 7 days)
+  const days = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - 6 + i);
+    return d.toLocaleDateString('ar-EG', { weekday: 'short' });
+  });
+
+  const sessionCounts = Array(7).fill(0);
+  const now = Date.now();
+  sessions.forEach(s => {
+    const ts = s.startTime?.toDate?.()?.getTime() || s.startedAt?.toDate?.()?.getTime() || 0;
+    if (ts) {
+      const daysAgo = Math.floor((now - ts) / (1000 * 60 * 60 * 24));
+      if (daysAgo >= 0 && daysAgo < 7) sessionCounts[6 - daysAgo]++;
+    }
+  });
+
+  if (chartSessions) chartSessions.destroy();
+  const ctx1 = document.getElementById('chartSessions').getContext('2d');
+  chartSessions = new Chart(ctx1, {
+    type: 'line',
+    data: {
+      labels: days,
+      datasets: [{
+        label: 'المشاهدات',
+        data: sessionCounts,
+        borderColor: '#2563a8',
+        backgroundColor: 'rgba(37,99,168,0.12)',
+        fill: true,
+        tension: 0.4,
+        pointBackgroundColor: '#2563a8',
+        pointRadius: 4
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false }, ticks: { color: textColor } },
+        y: { beginAtZero: true, ticks: { stepSize: 1, color: textColor }, grid: { color: gridColor } }
+      }
+    }
+  });
+
+  // 2. Top Videos chart
+  const videoViewsMap = {};
+  sessions.forEach(s => {
+    const title = s.videoTitle || 'فيديو';
+    videoViewsMap[title] = (videoViewsMap[title] || 0) + 1;
+  });
+
+  const sortedTop = Object.entries(videoViewsMap).sort((a, b) => b[1] - a[1]).slice(0, 5);
+
+  if (chartTopVideos) chartTopVideos.destroy();
+  const ctx2 = document.getElementById('chartTopVideos').getContext('2d');
+  chartTopVideos = new Chart(ctx2, {
+    type: 'bar',
+    data: {
+      labels: sortedTop.map(([k]) => (k.length > 20 ? k.substring(0, 18) + '...' : k)),
+      datasets: [{
+        label: 'مرات التشغيل',
+        data: sortedTop.map(([, v]) => v),
+        backgroundColor: ['#2563a8', '#7c3aed', '#16a34a', '#d97706', '#dc2626'],
+        borderRadius: 8
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      indexAxis: 'y',
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { beginAtZero: true, ticks: { stepSize: 1, color: textColor }, grid: { color: gridColor } },
+        y: { grid: { display: false }, ticks: { color: textColor } }
+      }
+    }
+  });
+}
+
+// ================================================================
+// COURSES MANAGEMENT
+// ================================================================
+async function loadCoursesData() {
+  try {
+    const snap = await getDocs(collection(db, 'courses'));
+    const list = [];
+    snap.forEach(d => list.push({ id: d.id, ...d.data() }));
+
+    // In-memory sort by order
+    allCourses = list.sort((a, b) => (parseInt(a.order) || 999) - (parseInt(b.order) || 999));
+    document.getElementById('coursesCountBadge').textContent = allCourses.length;
+
+    renderCoursesTable();
+    populateCourseSelectOptions();
+  } catch(e) {
+    console.error('Courses load error:', e);
+  }
+}
+
+function renderCoursesTable() {
+  const tbody = document.getElementById('coursesBody');
+  if (!allCourses.length) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:28px;color:var(--mut)">لا توجد دورات بعد. أضف دورتك الأولى الآن!</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = allCourses.map((c, i) => `
+    <tr>
+      <td>${i + 1}</td>
+      <td><strong style="color:var(--navy)">${escapeHtml(c.name || 'دورة')}</strong></td>
+      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis">${escapeHtml(c.description || '—')}</td>
+      <td><span class="badge badge-blue">${c.videoCount || 0} فيديو</span></td>
+      <td>${c.order || 1}</td>
+      <td><span class="badge ${c.published !== false ? 'badge-green' : 'badge-mut'}">${c.published !== false ? 'منشورة' : 'مخفية'}</span></td>
+      <td>
+        <button class="action-btn edit" onclick="editCourseRecord('${c.id}')" title="تعديل"><svg viewBox="0 0 24 24"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg></button>
+        <button class="action-btn toggle" onclick="toggleCoursePublishStatus('${c.id}', ${c.published === false})" title="${c.published !== false ? 'إخفاء' : 'نشر'}">
+          <svg viewBox="0 0 24 24">${c.published !== false ? '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19M1 1l22 22"/>' : '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>'}</svg>
+        </button>
+        <button class="action-btn del" onclick="deleteCourseRecord('${c.id}')" title="حذف"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function populateCourseSelectOptions() {
+  const selects = ['videoCourse', 'filterVideosCourse', 'attachCourse', 'filterCourse'];
+  selects.forEach(id => {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    const defaultLabel = sel.options[0]?.text || 'اختر الدورة';
+    sel.innerHTML = `<option value="">${defaultLabel}</option>`;
+    allCourses.forEach(c => {
+      sel.innerHTML += `<option value="${c.id}">${escapeHtml(c.name)}</option>`;
+    });
+  });
+}
+
+window.openAddCourseModal = () => {
+  document.getElementById('courseId').value = '';
+  document.getElementById('courseName').value = '';
+  document.getElementById('courseDesc').value = '';
+  document.getElementById('courseOrder').value = allCourses.length + 1;
+  document.getElementById('courseThumbnail').value = '';
+  document.getElementById('coursePublished').checked = true;
+  document.getElementById('courseModalTitle').textContent = 'إضافة دورة جديدة';
+  openAdminModal('courseModal');
+};
+
+window.editCourseRecord = function(id) {
+  const c = allCourses.find(x => x.id === id);
+  if (!c) return;
+  document.getElementById('courseId').value = id;
+  document.getElementById('courseName').value = c.name || '';
+  document.getElementById('courseDesc').value = c.description || '';
+  document.getElementById('courseOrder').value = c.order || 1;
+  document.getElementById('courseThumbnail').value = c.thumbnail || '';
+  document.getElementById('coursePublished').checked = c.published !== false;
+  document.getElementById('courseModalTitle').textContent = 'تعديل الدورة';
+  openAdminModal('courseModal');
+};
+
+window.saveCourseRecord = async function() {
+  if (!auth.currentUser || auth.currentUser.isAnonymous) {
+    notify('error', 'يجب تسجيل الدخول بحساب المشرف لحفظ البيانات');
+    return;
+  }
+  const id = document.getElementById('courseId').value;
+  const name = document.getElementById('courseName').value.trim();
+  if (!name) { notify('warning', 'اسم الدورة مطلوب'); return; }
+
+  const payload = {
+    name,
+    title: name,
+    description: document.getElementById('courseDesc').value.trim(),
+    order: parseInt(document.getElementById('courseOrder').value) || 1,
+    thumbnail: document.getElementById('courseThumbnail').value.trim(),
+    published: document.getElementById('coursePublished').checked,
+    updatedAt: serverTimestamp()
+  };
+
+  try {
+    if (id) {
+      await updateDoc(doc(db, 'courses', id), payload);
+      notify('success', 'تم تحديث الدورة بنجاح');
+    } else {
+      payload.createdAt = serverTimestamp();
+      payload.videoCount = 0;
+      await addDoc(collection(db, 'courses'), payload);
+      notify('success', 'تمت إضافة الدورة بنجاح');
+    }
+    closeAdminModal('courseModal');
+    await loadCoursesData();
+  } catch(e) {
+    console.error('Save course error:', e);
+    const msg = e.code === 'permission-denied'
+      ? 'ليس لديك صلاحية كتابة في قاعدة البيانات (Permission Denied). يرجى التأكد من تسجيل الدخول بحساب المشرف المصرح له.'
+      : (e.message || 'فشل في حفظ الدورة');
+    notify('error', msg);
+  }
+};
+
+window.toggleCoursePublishStatus = async function(id, pub) {
+  try {
+    await updateDoc(doc(db, 'courses', id), { published: pub, updatedAt: serverTimestamp() });
+    notify('success', pub ? 'تم نشر الدورة للطلاب' : 'تم إخفاء الدورة');
+    await loadCoursesData();
+  } catch(e) {
+    notify('error', 'فشل في تحديث حالة النشر');
+  }
+};
+
+window.deleteCourseRecord = function(id) {
+  Swal.fire({
+    title: 'حذف الدورة',
+    text: 'هل أنت متأكد من حذف هذه الدورة نهائياً؟',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'نعم، حذف الدورة',
+    cancelButtonText: 'إلغاء'
+  }).then(async (r) => {
+    if (r.isConfirmed) {
+      try {
+        await deleteDoc(doc(db, 'courses', id));
+        notify('success', 'تم حذف الدورة بنجاح');
+        await loadCoursesData();
+      } catch(e) {
+        notify('error', 'تعذر حذف الدورة');
+      }
+    }
+  });
+};
+
+// ================================================================
+// VIDEOS MANAGEMENT
+// ================================================================
+window.loadVideosTable = async function() {
+  const tbody = document.getElementById('videosBody');
+  tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--mut)">جاري تحميل الفيديوهات...</td></tr>`;
+
+  try {
+    const courseFilter = document.getElementById('filterVideosCourse').value;
+    const snap = await getDocs(collection(db, 'videos'));
+    let videos = [];
+    snap.forEach(d => videos.push({ id: d.id, ...d.data() }));
+
+    if (courseFilter) {
+      videos = videos.filter(v => v.courseId === courseFilter);
+    }
+
+    videos.sort((a, b) => (parseInt(a.order) || 999) - (parseInt(b.order) || 999));
+    document.getElementById('videosCountBadge').textContent = videos.length;
+
+    if (!videos.length) {
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--mut)">لا توجد فيديوهات مسجلة في هذا المسار</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = videos.map((v, i) => `
+      <tr>
+        <td>${i + 1}</td>
+        <td><strong style="color:var(--navy)">${escapeHtml(v.title || 'فيديو')}</strong></td>
+        <td>${escapeHtml(v.courseName || '—')}</td>
+        <td>${v.order || 1}</td>
+        <td><span class="badge badge-blue">${v.playCount || 0}</span></td>
+        <td><span class="badge ${v.published !== false ? 'badge-green' : 'badge-mut'}">${v.published !== false ? 'منشور' : 'مخفي'}</span></td>
+        <td>
+          <button class="action-btn edit" onclick="editVideoRecord('${v.id}')" title="تعديل"><svg viewBox="0 0 24 24"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg></button>
+          <button class="action-btn toggle" onclick="toggleVideoPublishStatus('${v.id}', ${v.published === false})" title="${v.published !== false ? 'إخفاء' : 'نشر'}">
+            <svg viewBox="0 0 24 24">${v.published !== false ? '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19M1 1l22 22"/>' : '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>'}</svg>
+          </button>
+          <button class="action-btn del" onclick="deleteVideoRecord('${v.id}', '${v.courseId || ''}')" title="حذف"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+        </td>
+      </tr>
+    `).join('');
+  } catch(e) {
+    console.error(e);
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:24px;color:var(--red)">تعذر تحميل الفيديوهات</td></tr>`;
+  }
+};
+
+window.openAddVideoModal = () => {
+  document.getElementById('videoId').value = '';
+  document.getElementById('videoTitle').value = '';
+  document.getElementById('videoCourse').value = '';
+  document.getElementById('videoDriveUrl').value = '';
+  document.getElementById('videoDesc').value = '';
+  document.getElementById('videoThumb').value = '';
+  document.getElementById('videoOrder').value = 1;
+  document.getElementById('videoPublished').checked = true;
+  document.getElementById('driveUrlPreview').innerHTML = '';
+  document.getElementById('videoModalTitle').textContent = 'إضافة فيديو جديد';
+  openAdminModal('videoModal');
+};
+
+window.editVideoRecord = async function(id) {
+  try {
+    const snap = await getDoc(doc(db, 'videos', id));
+    if (!snap.exists()) return;
+    const v = snap.data();
+    document.getElementById('videoId').value = id;
+    document.getElementById('videoTitle').value = v.title || '';
+    document.getElementById('videoCourse').value = v.courseId || '';
+    document.getElementById('videoDriveUrl').value = v.driveUrl || v.url || '';
+    document.getElementById('videoDesc').value = v.description || '';
+    document.getElementById('videoThumb').value = v.thumbnail || '';
+    document.getElementById('videoOrder').value = v.order || 1;
+    document.getElementById('videoPublished').checked = v.published !== false;
+    document.getElementById('videoModalTitle').textContent = 'تعديل الفيديو';
+    previewVideoEmbedLink();
+    openAdminModal('videoModal');
+  } catch(e) {
+    notify('error', 'تعذر جلب بيانات الفيديو');
+  }
+};
+
+window.previewVideoEmbedLink = function() {
+  const url = document.getElementById('videoDriveUrl').value.trim();
+  const previewDiv = document.getElementById('driveUrlPreview');
+  if (!url) { previewDiv.innerHTML = ''; return; }
+
+  let embed = '';
+  const m1 = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) || url.match(/id=([a-zA-Z0-9_-]+)/);
+  if (m1 && m1[1]) embed = `https://drive.google.com/file/d/${m1[1]}/preview`;
+  else if (url.includes('youtu')) {
+    const ym = url.match(/(?:youtu\.be\/|watch\?v=)([a-zA-Z0-9_-]+)/);
+    if (ym && ym[1]) embed = `https://www.youtube.com/embed/${ym[1]}`;
+  }
+
+  if (embed) {
+    previewDiv.innerHTML = `
+      <div style="font-size:12px;color:var(--green);font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:4px">
+        <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        رابط صالح ومُتعرَّف عليه
+      </div>
+      <div style="aspect-ratio:16/9;border-radius:10px;overflow:hidden;border:1px solid var(--line);background:#000">
+        <iframe src="${embed}" style="width:100%;height:100%;border:0" allow="autoplay"></iframe>
+      </div>`;
+  } else {
+    previewDiv.innerHTML = `<div style="font-size:12px;color:var(--gold);font-weight:700">سيتم استخدام الرابط المباشر</div>`;
+  }
+};
+
+window.saveVideoRecord = async function() {
+  if (!auth.currentUser || auth.currentUser.isAnonymous) {
+    notify('error', 'يجب تسجيل الدخول بحساب المشرف لحفظ الفيديو');
+    return;
+  }
+  const id = document.getElementById('videoId').value;
+  const title = document.getElementById('videoTitle').value.trim();
+  const courseId = document.getElementById('videoCourse').value;
+  const driveUrl = document.getElementById('videoDriveUrl').value.trim();
+
+  if (!title) { notify('warning', 'عنوان الفيديو مطلوب'); return; }
+  if (!driveUrl) { notify('warning', 'رابط الفيديو مطلوب'); return; }
+
+  const courseObj = allCourses.find(c => c.id === courseId);
+  const payload = {
+    title,
+    courseId: courseId || '',
+    courseName: courseObj?.name || '',
+    driveUrl,
+    url: driveUrl,
+    videoUrl: driveUrl,
+    description: document.getElementById('videoDesc').value.trim(),
+    thumbnail: document.getElementById('videoThumb').value.trim(),
+    order: parseInt(document.getElementById('videoOrder').value) || 1,
+    published: document.getElementById('videoPublished').checked,
+    updatedAt: serverTimestamp()
+  };
+
+  try {
+    if (id) {
+      await updateDoc(doc(db, 'videos', id), payload);
+      notify('success', 'تم تحديث الفيديو بنجاح');
+    } else {
+      payload.createdAt = serverTimestamp();
+      payload.playCount = 0;
+      await addDoc(collection(db, 'videos'), payload);
+
+      if (courseId) {
+        try {
+          await updateDoc(doc(db, 'courses', courseId), {
+            videoCount: (courseObj?.videoCount || 0) + 1
+          });
+        } catch(_) {}
+      }
+      notify('success', 'تمت إضافة الفيديو بنجاح');
+    }
+    closeAdminModal('videoModal');
+    loadVideosTable();
+    loadCoursesData();
+  } catch(e) {
+    console.error('Save video error:', e);
+    const msg = e.code === 'permission-denied'
+      ? 'ليس لديك صلاحية كتابة في قاعدة البيانات (Permission Denied). يرجى التأكد من تسجيل الدخول بحساب المشرف المصرح له.'
+      : (e.message || 'فشل في حفظ الفيديو');
+    notify('error', msg);
+  }
+};
+
+window.toggleVideoPublishStatus = async function(id, pub) {
+  try {
+    await updateDoc(doc(db, 'videos', id), { published: pub, updatedAt: serverTimestamp() });
+    notify('success', pub ? 'تم نشر الفيديو للطلاب' : 'تم إخفاء الفيديو');
+    loadVideosTable();
+  } catch(e) {
+    notify('error', 'تعذر تحديث حالة الفيديو');
+  }
+};
+
+window.deleteVideoRecord = function(id, courseId) {
+  Swal.fire({
+    title: 'حذف الفيديو',
+    text: 'هل أنت متأكد من حذف هذا الفيديو نهائياً؟',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'نعم، احذف',
+    cancelButtonText: 'إلغاء'
+  }).then(async (r) => {
+    if (r.isConfirmed) {
+      try {
+        await deleteDoc(doc(db, 'videos', id));
+        if (courseId) {
+          const c = allCourses.find(x => x.id === courseId);
+          if (c && c.videoCount > 0) {
+            await updateDoc(doc(db, 'courses', courseId), { videoCount: c.videoCount - 1 });
+          }
+        }
+        notify('success', 'تم حذف الفيديو');
+        loadVideosTable();
+        loadCoursesData();
+      } catch(e) {
+        notify('error', 'تعذر حذف الفيديو');
+      }
+    }
+  });
+};
+
+// ================================================================
+// ATTACHMENTS MANAGEMENT
+// ================================================================
+window.loadAttachmentsTable = async function() {
+  const tbody = document.getElementById('attachBody');
+  tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--mut)">جاري تحميل المرفقات...</td></tr>`;
+
+  try {
+    const snap = await getDocs(collection(db, 'attachments'));
+    const files = [];
+    snap.forEach(d => files.push({ id: d.id, ...d.data() }));
+
+    files.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+
+    if (!files.length) {
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--mut)">لا توجد مرفقات مسجلة بعد</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = files.map(f => {
+      const course = allCourses.find(c => c.id === f.courseId);
+      return `
+        <tr>
+          <td>
+            <strong style="color:var(--navy)">${escapeHtml(f.name || 'ملف')}</strong><br>
+            <a href="${f.url}" target="_blank" style="font-size:12px;color:var(--teal)">عرض الرابط</a>
+          </td>
+          <td><span class="badge badge-blue">${(f.type || 'PDF').toUpperCase()}</span></td>
+          <td>${escapeHtml(course?.name || 'مرفق عام')}</td>
+          <td><span class="badge ${f.downloadable !== false ? 'badge-green' : 'badge-mut'}">${f.downloadable !== false ? 'نعم' : 'لا'}</span></td>
+          <td>
+            <button class="action-btn edit" onclick="editAttachRecord('${f.id}')" title="تعديل"><svg viewBox="0 0 24 24"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg></button>
+            <button class="action-btn del" onclick="deleteAttachRecord('${f.id}')" title="حذف"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  } catch(e) {
+    console.error(e);
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--red)">تعذر تحميل المرفقات</td></tr>`;
+  }
+};
+
+window.openAddAttachmentModal = () => {
+  document.getElementById('attachId').value = '';
+  document.getElementById('attachName').value = '';
+  document.getElementById('attachUrl').value = '';
+  document.getElementById('attachType').value = 'pdf';
+  document.getElementById('attachCourse').value = '';
+  document.getElementById('attachDesc').value = '';
+  document.getElementById('attachDownloadable').checked = true;
+  document.getElementById('attachModalTitle').textContent = 'إضافة مرفق جديد';
+  openAdminModal('attachModal');
+};
+
+window.editAttachRecord = async function(id) {
+  try {
+    const snap = await getDoc(doc(db, 'attachments', id));
+    if (!snap.exists()) return;
+    const f = snap.data();
+    document.getElementById('attachId').value = id;
+    document.getElementById('attachName').value = f.name || '';
+    document.getElementById('attachUrl').value = f.url || '';
+    document.getElementById('attachType').value = f.type || 'pdf';
+    document.getElementById('attachCourse').value = f.courseId || '';
+    document.getElementById('attachDesc').value = f.description || '';
+    document.getElementById('attachDownloadable').checked = f.downloadable !== false;
+    document.getElementById('attachModalTitle').textContent = 'تعديل المرفق';
+    openAdminModal('attachModal');
+  } catch(e) {
+    notify('error', 'تعذر جلب المرفق');
+  }
+};
+
+window.saveAttachmentRecord = async function() {
+  if (!auth.currentUser || auth.currentUser.isAnonymous) {
+    notify('error', 'يجب تسجيل الدخول بحساب المشرف لحفظ المرفقات');
+    return;
+  }
+  const id = document.getElementById('attachId').value;
+  const name = document.getElementById('attachName').value.trim();
+  const url = document.getElementById('attachUrl').value.trim();
+
+  if (!name || !url) { notify('warning', 'الاسم والرابط مطلوبان'); return; }
+
+  const payload = {
+    name,
+    title: name,
+    url,
+    fileUrl: url,
+    type: document.getElementById('attachType').value,
+    courseId: document.getElementById('attachCourse').value || '',
+    description: document.getElementById('attachDesc').value.trim(),
+    downloadable: document.getElementById('attachDownloadable').checked,
+    updatedAt: serverTimestamp()
+  };
+
+  try {
+    if (id) {
+      await updateDoc(doc(db, 'attachments', id), payload);
+      notify('success', 'تم تحديث المرفق بنجاح');
+    } else {
+      payload.createdAt = serverTimestamp();
+      await addDoc(collection(db, 'attachments'), payload);
+      notify('success', 'تمت إضافة المرفق بنجاح');
+    }
+    closeAdminModal('attachModal');
+    loadAttachmentsTable();
+  } catch(e) {
+    console.error('Save attachment error:', e);
+    const msg = e.code === 'permission-denied'
+      ? 'ليس لديك صلاحية كتابة في قاعدة البيانات (Permission Denied). يرجى التأكد من تسجيل الدخول بحساب المشرف المصرح له.'
+      : (e.message || 'فشل في حفظ المرفق');
+    notify('error', msg);
+  }
+};
+
+window.deleteAttachRecord = function(id) {
+  Swal.fire({
+    title: 'حذف المرفق',
+    text: 'هل أنت متأكد من حذف هذا المرفق؟',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'نعم، احذف',
+    cancelButtonText: 'إلغاء'
+  }).then(async (r) => {
+    if (r.isConfirmed) {
+      try {
+        await deleteDoc(doc(db, 'attachments', id));
+        notify('success', 'تم حذف المرفق');
+        loadAttachmentsTable();
+      } catch(e) {
+        notify('error', 'تعذر الحذف');
+      }
+    }
+  });
+};
+
+// ================================================================
+// PLATFORM CONTROLS & STATE SYNC
+// ================================================================
+function listenPlatformStateLive() {
+  const ref = doc(db, 'platformSettings', 'main');
+  onSnapshot(ref, (snap) => {
+    if (!snap.exists()) return;
+    const s = snap.data();
+
+    // Checkboxes
+    document.getElementById('toggleMaint').checked = !!s.maintenanceMode;
+    document.getElementById('toggleBlock').checked = !!s.blockMode;
+    document.getElementById('toggleCopy').checked = !!s.copyrightMode;
+
+    // Status Labels
+    document.getElementById('maintStatus').textContent = s.maintenanceMode ? 'مُفعَّل حالياً' : 'مُعطَّل';
+    document.getElementById('maintStatus').style.color = s.maintenanceMode ? 'var(--gold)' : 'var(--mut)';
+
+    document.getElementById('blockStatus').textContent = s.blockMode ? 'مُفعَّل حالياً' : 'مُعطَّل';
+    document.getElementById('blockStatus').style.color = s.blockMode ? 'var(--red)' : 'var(--mut)';
+
+    document.getElementById('copyStatus').textContent = s.copyrightMode ? 'مُفعَّل حالياً' : 'مُعطَّل';
+    document.getElementById('copyStatus').style.color = s.copyrightMode ? 'var(--green)' : 'var(--mut)';
+
+    // Messages
+    const maintMsg = s.maintMsg || s.maintenanceMessage;
+    const blockMsg = s.blockMsg || s.blockMessage;
+    const copyMsg = s.copyMsg || s.copyrightMessage;
+
+    if (maintMsg && !document.getElementById('maintMsg').matches(':focus')) {
+      document.getElementById('maintMsg').value = maintMsg;
+    }
+    if (blockMsg && !document.getElementById('blockMsg').matches(':focus')) {
+      document.getElementById('blockMsg').value = blockMsg;
+    }
+    if (copyMsg && !document.getElementById('copyMsg').matches(':focus')) {
+      document.getElementById('copyMsg').value = copyMsg;
+    }
+  });
+}
+
+window.updatePlatformToggle = async function(field, value) {
+  try {
+    await setDoc(doc(db, 'platformSettings', 'main'), {
+      [field]: value,
+      updatedAt: serverTimestamp()
+    }, { merge: true });
+    notify('success', value ? 'تم تفعيل الوضع بنجاح' : 'تم تعطيل الوضع');
+  } catch(e) {
+    notify('error', 'فشل في حفظ الحالة');
+  }
+};
+
+window.savePlatformCustomMsg = async function(fieldId) {
+  const val = document.getElementById(fieldId).value.trim();
+  if (!val) { notify('warning', 'الرسالة لا يمكن أن تكون فارغة'); return; }
+
+  // Dual field names for 100% compatibility with student page
+  const payload = { updatedAt: serverTimestamp() };
+  if (fieldId === 'maintMsg') {
+    payload.maintMsg = val;
+    payload.maintenanceMessage = val;
+  } else if (fieldId === 'blockMsg') {
+    payload.blockMsg = val;
+    payload.blockMessage = val;
+  } else if (fieldId === 'copyMsg') {
+    payload.copyMsg = val;
+    payload.copyrightMessage = val;
+  }
+
+  try {
+    await setDoc(doc(db, 'platformSettings', 'main'), payload, { merge: true });
+    notify('success', 'تم حفظ الرسالة وبثها للطلاب');
+  } catch(e) {
+    notify('error', 'تعذر حفظ الرسالة');
+  }
+};
+
+// ================================================================
+// SETTINGS TAB
+// ================================================================
+async function loadSettingsValues() {
+  try {
+    const snap = await getDoc(doc(db, 'platformSettings', 'main'));
+    if (!snap.exists()) return;
+    const s = snap.data();
+
+    if (s.platformName) document.getElementById('settPlatName').value = s.platformName;
+    if (s.tagline) document.getElementById('settTagline').value = s.tagline;
+    if (s.welcomeText) document.getElementById('settWelcome').value = s.welcomeText;
+
+    if (s.socialLinks?.whatsapp) document.getElementById('settWA').value = s.socialLinks.whatsapp;
+    if (s.socialLinks?.telegram) document.getElementById('settTG').value = s.socialLinks.telegram;
+    if (s.socialLinks?.email) document.getElementById('settEmail').value = s.socialLinks.email;
+
+    if (s.devName) document.getElementById('devName').value = s.devName;
+    if (s.devRole) document.getElementById('devRole').value = s.devRole;
+    if (s.devUni) document.getElementById('devUni').value = s.devUni;
+    if (s.copyrightText) document.getElementById('copyrightText').value = s.copyrightText;
+  } catch(e) {}
+}
+
+window.savePlatformIdentitySettings = async function() {
+  const platformName = document.getElementById('settPlatName').value.trim();
+  const tagline = document.getElementById('settTagline').value.trim();
+  const welcomeText = document.getElementById('settWelcome').value.trim();
+
+  try {
+    await setDoc(doc(db, 'platformSettings', 'main'), {
+      platformName,
+      tagline,
+      welcomeText,
+      updatedAt: serverTimestamp()
+    }, { merge: true });
+    notify('success', 'تم حفظ بيانات المنصة وتحديثها لدى الطلاب');
+  } catch(e) {
+    notify('error', 'فشل في حفظ الإعدادات');
+  }
+};
+
+window.saveSocialLinksSettings = async function() {
+  const whatsapp = document.getElementById('settWA').value.trim();
+  const telegram = document.getElementById('settTG').value.trim();
+  const email = document.getElementById('settEmail').value.trim();
+
+  try {
+    await setDoc(doc(db, 'platformSettings', 'main'), {
+      socialLinks: { whatsapp, telegram, email },
+      updatedAt: serverTimestamp()
+    }, { merge: true });
+    notify('success', 'تم حفظ روابط التواصل');
+  } catch(e) {
+    notify('error', 'فشل في حفظ الروابط');
+  }
+};
+
+window.saveDeveloperInfoSettings = async function() {
+  const devName = document.getElementById('devName').value.trim();
+  const devRole = document.getElementById('devRole').value.trim();
+  const devUni = document.getElementById('devUni').value.trim();
+  const copyrightText = document.getElementById('copyrightText').value.trim();
+
+  try {
+    await setDoc(doc(db, 'platformSettings', 'main'), {
+      devName,
+      devRole,
+      devUni,
+      copyrightText,
+      updatedAt: serverTimestamp()
+    }, { merge: true });
+    notify('success', 'تم حفظ بيانات المطور وحقوق الفوتر');
+  } catch(e) {
+    notify('error', 'فشل في حفظ البيانات');
+  }
+};
+
+window.clearAllWatchSessionsLog = function() {
+  Swal.fire({
+    title: 'تحذير مسح السجلات!',
+    text: 'سيتم مسح جميع سجلات مشاهدات الطلاب نهائياً ولا يمكن استرجاعها. هل توافق؟',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'نعم، امسح كل السجلات',
+    cancelButtonText: 'إلغاء'
+  }).then(async (r) => {
+    if (r.isConfirmed) {
+      try {
+        const snap = await getDocs(collection(db, 'watchSessions'));
+        const batch = [];
+        snap.forEach(d => batch.push(deleteDoc(doc(db, 'watchSessions', d.id))));
+        await Promise.all(batch);
+        notify('success', 'تم مسح سجلات المشاهدة بنجاح');
+        loadDashboardData();
+      } catch(e) {
+        notify('error', 'تعذر مسح السجلات');
+      }
+    }
+  });
+};
+
+// ================================================================
+// ANALYTICS & STUDENT HISTORY
+// ================================================================
+window.loadAnalyticsData = async function() {
+  const tbody = document.getElementById('analyticsBody');
+  tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--mut)">جاري جلب تحليلات الطلاب...</td></tr>`;
+
+  try {
+    const [uSnap, sSnap] = await Promise.all([
+      getDocs(collection(db, 'users')),
+      getDocs(collection(db, 'watchSessions'))
+    ]);
+
+    allStudents = [];
+    uSnap.forEach(d => allStudents.push({ id: d.id, ...d.data() }));
+
+    allSessions = [];
+    sSnap.forEach(d => allSessions.push({ id: d.id, ...d.data() }));
+
+    document.getElementById('studentsTotal').textContent = `${allStudents.length} طالب مسجل`;
+    filterStudentsTable();
+  } catch(e) {
+    console.error(e);
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--red)">تعذر تحميل السجلات</td></tr>`;
+  }
+};
+
+window.filterStudentsTable = function() {
+  const search = document.getElementById('searchStudent').value.trim().toLowerCase();
+  const courseFilter = document.getElementById('filterCourse').value;
+
+  let filtered = allStudents;
+  if (search) {
+    filtered = filtered.filter(s => (s.name || '').toLowerCase().includes(search));
+  }
+
+  if (courseFilter) {
+    const studentIdsWithCourse = new Set(
+      allSessions.filter(s => s.courseId === courseFilter).map(s => s.uid || s.userId)
+    );
+    filtered = filtered.filter(s => studentIdsWithCourse.has(s.id));
+  }
+
+  renderAnalyticsRows(filtered);
+};
+
+function renderAnalyticsRows(students) {
+  const tbody = document.getElementById('analyticsBody');
+  if (!students.length) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--mut)">لا توجد بيانات مطابقة</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = students.map(st => {
+    const stSessions = allSessions.filter(s => (s.uid === st.id || s.userId === st.id));
+    const totalSecs = stSessions.reduce((acc, s) => acc + (s.durationSeconds || 0), 0);
+    const uniqueVids = new Set(stSessions.map(s => s.videoId)).size;
+    const initial = st.name ? st.name.charAt(0) : 'ط';
+
+    return `
+      <tr>
+        <td>
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--navy),var(--teal));color:#fff;display:grid;place-items:center;font-weight:800">${initial}</div>
+            <strong style="color:var(--navy)">${escapeHtml(st.name || 'طالب')}</strong>
+          </div>
+        </td>
+        <td><span class="badge badge-blue">${uniqueVids} فيديوهات</span></td>
+        <td><span class="badge badge-gold">${stSessions.length} مرات تشغيل</span></td>
+        <td>${formatSecondsDuration(totalSecs)}</td>
+        <td style="font-size:12px;color:var(--mut)">${formatTimestamp(st.firstSeen)}</td>
+        <td>
+          <button class="action-btn view" onclick="showStudentHistoryDetail('${st.id}')" title="عرض السجل التفصيلي">
+            <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+window.showStudentHistoryDetail = function(uid) {
+  const st = allStudents.find(s => s.id === uid);
+  if (!st) return;
+
+  const stSessions = allSessions.filter(s => (s.uid === uid || s.userId === uid));
+  const totalSecs = stSessions.reduce((acc, s) => acc + (s.durationSeconds || 0), 0);
+  const uniqueVids = new Set(stSessions.map(s => s.videoId)).size;
+
+  document.getElementById('detailStudentName').textContent = `سجل الطالب: ${st.name}`;
+  document.getElementById('studentDetailBody').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px">
+      <div class="stat-card stat-blue" style="padding:14px"><div class="stat-num" style="font-size:24px">${stSessions.length}</div><div class="stat-label">مرات التشغيل</div></div>
+      <div class="stat-card stat-green" style="padding:14px"><div class="stat-num" style="font-size:24px">${uniqueVids}</div><div class="stat-label">فيديوهات مختلفة</div></div>
+      <div class="stat-card stat-purple" style="padding:14px"><div class="stat-num" style="font-size:24px">${formatSecondsDuration(totalSecs)}</div><div class="stat-label">وقت التعلم التراكمي</div></div>
+      <div class="stat-card stat-gold" style="padding:14px"><div class="stat-num" style="font-size:24px">${st.visits || 1}</div><div class="stat-label">مرات الدخول</div></div>
+    </div>
+
+    <div style="font-size:13px;color:var(--mut);margin-bottom:14px">
+      أول زيارة: <strong>${formatTimestamp(st.firstSeen)}</strong> &bull; آخر ظهور: <strong>${formatTimestamp(st.lastSeen)}</strong>
+    </div>
+
+    <div class="card-title" style="font-size:14px">سجل المشاهدات الأخيرة</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>الفيديو</th><th>الدورة</th><th>المدة</th><th>التاريخ</th></tr></thead>
+        <tbody>
+          ${stSessions.length ? stSessions.map(s => `
+            <tr>
+              <td><strong style="color:var(--navy)">${escapeHtml(s.videoTitle || 'فيديو')}</strong></td>
+              <td>${escapeHtml(s.courseName || '—')}</td>
+              <td>${formatSecondsDuration(s.durationSeconds || 0)}</td>
+              <td style="font-size:12px;color:var(--mut)">${formatTimestamp(s.startTime || s.startedAt)}</td>
+            </tr>
+          `).join('') : '<tr><td colspan="4" style="text-align:center;padding:16px;color:var(--mut)">لا توجد جلسات مسجلة</td></tr>'}
+        </tbody>
+      </table>
+    </div>
+  `;
+
+  openAdminModal('studentDetailModal');
+};
+
+// ================================================================
+// UTILITIES
+// ================================================================
+function formatSecondsDuration(secs) {
+  if (!secs) return '0 د';
+  if (secs < 60) return `${secs} ثانية`;
+  if (secs < 3600) return `${Math.floor(secs / 60)} دقيقة`;
+  return `${(secs / 3600).toFixed(1)} ساعة`;
+}
+
+function formatTimestamp(ts) {
+  if (!ts) return '—';
+  const d = ts?.toDate ? ts.toDate() : new Date(ts);
+  if (isNaN(d.getTime())) return '—';
+  return d.toLocaleDateString('ar-EG', {
+    year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+  });
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+// Global Compatibility Aliases
+window.saveCourse = window.saveCourseRecord;
+window.saveVideo = window.saveVideoRecord;
+window.saveAttachment = window.saveAttachmentRecord;
+window.editCourse = window.editCourseRecord;
+window.deleteCourse = window.deleteCourseRecord;
+window.editVideo = window.editVideoRecord;
+window.deleteVideo = window.deleteVideoRecord;
+window.editAttach = window.editAttachRecord;
+window.deleteAttach = window.deleteAttachRecord;
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-overlay.open').forEach(m => closeAdminModal(m.id));
+  }
+});
+</script>
+</body>
+</html>
